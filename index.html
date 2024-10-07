@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -87,4 +87,123 @@ We greatly respect your privacy and are committed to protecting your personal da
         <li><strong>By Visiting This Page on Our App:</strong> [Your Contact Page URL]</li>
     </ul>
 </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qibla & Masjid Al-Aqsa Compass</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .compass {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border: 5px solid black;
+            border-radius: 50%;
+        }
+        .compass-arrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 2px;
+            background-color: red;
+            transform-origin: 0 50%;
+        }
+        .arrow-label {
+            position: absolute;
+            font-weight: bold;
+            text-align: center;
+            width: 100px;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #qibla-arrow {
+            background-color: red;
+        }
+        #aqsa-arrow {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="compass">
+        <div class="compass-arrow" id="qibla-arrow"></div>
+        <div class="compass-arrow" id="aqsa-arrow"></div>
+        <div class="arrow-label">N</div>
+    </div>
+
+    <script>
+        const kaabaCoords = { lat: 21.4225, lng: 39.8262 };  // Qibla: Mecca
+        const aqsaCoords = { lat: 31.7767, lng: 35.2342 };   // Masjid Al-Aqsa: Jerusalem
+
+        function calculateBearing(start, end) {
+            const startLat = toRadians(start.lat);
+            const startLng = toRadians(start.lng);
+            const endLat = toRadians(end.lat);
+            const endLng = toRadians(end.lng);
+
+            const dLng = endLng - startLng;
+            const x = Math.sin(dLng) * Math.cos(endLat);
+            const y = Math.cos(startLat) * Math.sin(endLat) - Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLng);
+            const bearing = Math.atan2(x, y);
+            return (toDegrees(bearing) + 360) % 360; // Normalize to 0-360 degrees
+        }
+
+        function toRadians(degrees) {
+            return degrees * (Math.PI / 180);
+        }
+
+        function toDegrees(radians) {
+            return radians * (180 / Math.PI);
+        }
+
+        function rotateCompass(bearingQibla, bearingAqsa, deviceHeading) {
+            const qiblaRotation = (bearingQibla - deviceHeading + 360) % 360;
+            const aqsaRotation = (bearingAqsa - deviceHeading + 360) % 360;
+
+            document.getElementById('qibla-arrow').style.transform = `rotate(${qiblaRotation}deg)`;
+            document.getElementById('aqsa-arrow').style.transform = `rotate(${aqsaRotation}deg)`;
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const userCoords = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                const qiblaBearing = calculateBearing(userCoords, kaabaCoords);
+                const aqsaBearing = calculateBearing(userCoords, aqsaCoords);
+
+                if (window.DeviceOrientationEvent) {
+                    window.addEventListener('deviceorientation', (event) => {
+                        const deviceHeading = event.alpha; // Device's current heading
+                        rotateCompass(qiblaBearing, aqsaBearing, deviceHeading);
+                    });
+                } else {
+                    alert('Device orientation is not supported.');
+                }
+            }, () => {
+                alert('Unable to retrieve your location.');
+            });
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
+    </script>
+
+</body>
 </html>
+
