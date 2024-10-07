@@ -104,7 +104,7 @@ We greatly respect your privacy and are committed to protecting your personal da
             margin: 0;
             font-family: Arial, sans-serif;
         }
-        .compass {
+        .compass-container {
             position: relative;
             width: 200px;
             height: 200px;
@@ -135,11 +135,14 @@ We greatly respect your privacy and are committed to protecting your personal da
         #aqsa-arrow {
             background-color: green;
         }
+        #compass {
+            transition: transform 0.5s;
+        }
     </style>
 </head>
 <body>
 
-    <div class="compass">
+    <div class="compass-container" id="compass">
         <div class="compass-arrow" id="qibla-arrow"></div>
         <div class="compass-arrow" id="aqsa-arrow"></div>
         <div class="arrow-label">N</div>
@@ -170,12 +173,17 @@ We greatly respect your privacy and are committed to protecting your personal da
             return radians * (180 / Math.PI);
         }
 
-        function rotateCompass(bearingQibla, bearingAqsa, deviceHeading) {
-            const qiblaRotation = (bearingQibla - deviceHeading + 360) % 360;
-            const aqsaRotation = (bearingAqsa - deviceHeading + 360) % 360;
+        function rotateCompassContainer(deviceHeading) {
+            const compass = document.getElementById('compass');
+            compass.style.transform = `rotate(${deviceHeading}deg)`;
+        }
 
-            document.getElementById('qibla-arrow').style.transform = `rotate(${qiblaRotation}deg)`;
-            document.getElementById('aqsa-arrow').style.transform = `rotate(${aqsaRotation}deg)`;
+        function rotateCompassArrows(qiblaBearing, aqsaBearing) {
+            const qiblaArrow = document.getElementById('qibla-arrow');
+            const aqsaArrow = document.getElementById('aqsa-arrow');
+            
+            qiblaArrow.style.transform = `rotate(${qiblaBearing}deg)`;
+            aqsaArrow.style.transform = `rotate(${aqsaBearing}deg)`;
         }
 
         if (navigator.geolocation) {
@@ -191,7 +199,15 @@ We greatly respect your privacy and are committed to protecting your personal da
                 if (window.DeviceOrientationEvent) {
                     window.addEventListener('deviceorientation', (event) => {
                         const deviceHeading = event.alpha; // Device's current heading
-                        rotateCompass(qiblaBearing, aqsaBearing, deviceHeading);
+
+                        // Rotate the whole compass (simulating a physical compass)
+                        rotateCompassContainer(deviceHeading);
+
+                        // Adjust Qibla and Aqsa arrows according to the device's heading
+                        const adjustedQiblaBearing = (qiblaBearing - deviceHeading + 360) % 360;
+                        const adjustedAqsaBearing = (aqsaBearing - deviceHeading + 360) % 360;
+
+                        rotateCompassArrows(adjustedQiblaBearing, adjustedAqsaBearing);
                     });
                 } else {
                     alert('Device orientation is not supported.');
