@@ -38,7 +38,7 @@
     }
 
     .collapse-icon.collapsed {
-      transform: rotate(90deg);
+      transform: rotate(90deg); /* Rotate the icon for collapsed state */
     }
 
     .children {
@@ -68,6 +68,11 @@
     .user-email {
       font-size: 0.9em;
       color: gray;
+    }
+
+    /* Initially hide the children */
+    .collapsed .children {
+      display: none;
     }
   </style>
 </head>
@@ -140,7 +145,7 @@
                 childrenContainer.appendChild(userNode);
               });
 
-              // Initially hide children (collapse state)
+              // Append children container to the tree node
               treeNode.appendChild(childrenContainer);
 
               // Add click event to toggle collapse/expand
