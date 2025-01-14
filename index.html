@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Christmas Donation Form</title>
+  <style>
+    .family-tree {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .tree-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 15px;
+      width: 250px;
+    }
+
+    .provider {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .collapse-icon {
+      margin-left: 10px;
+      font-size: 1.2em;
+      transition: transform 0.3s ease;
+    }
+
+    .collapse-icon.collapsed {
+      transform: rotate(90deg);
+    }
+
+    .children {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .user-node {
+      background-color: #f4f4f9;
+      border-radius: 8px;
+      padding: 10px;
+      min-width: 120px;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .user-node:hover {
+      background-color: #e1e1e6;
+    }
+
+    .user-name {
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+
+    .user-email {
+      font-size: 0.9em;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="family-tree" class="family-tree"></div>
+
+  <script>
+    // Example data from your original file (data.json)
+    const data = {
+      "users": [
+        {
+          "user_id": 1,
+          "provider_id": "10156013132600023",
+          "name": "Musstanser Tinauli",
+          "email": "musstanser@hotmail.com",
+          "provider": "SkillBazaar"
+        },
+        {
+          "user_id": 2,
+          "provider_id": "10156013132600024",
+          "name": "John Doe",
+          "email": "johndoe@example.com",
+          "provider": "SkillBazaar"
+        },
+        {
+          "user_id": 3,
+          "provider_id": "10156013132600025",
+          "name": "Jane Smith",
+          "email": "janesmith@example.com",
+          "provider": "TechCorp"
+        }
+      ]
+    };
+
+    // Group users by provider
+    const providerTree = data.users.reduce((acc, user) => {
+      const { provider } = user;
+      if (!acc[provider]) {
+        acc[provider] = [];
+      }
+      acc[provider].push(user);
+      return acc;
+    }, {});
+
+    // Function to toggle collapse/expand
+    function toggleCollapse(providerName) {
+      const providerNode = document.getElementById(providerName);
+      const isCollapsed = providerNode.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        providerNode.classList.remove('collapsed');
+      } else {
+        providerNode.classList.add('collapsed');
+      }
+    }
+
+    // Function to render the tree view
+    function renderTreeView() {
+      const familyTreeElement = document.getElementById('family-tree');
+      for (const providerName in providerTree) {
+        if (providerTree.hasOwnProperty(providerName)) {
+          const users = providerTree[providerName];
+
+          // Create tree node for the provider
+          const treeNode = document.createElement('div');
+          treeNode.classList.add('tree-node');
+          treeNode.id = providerName;
+
+          // Create provider header with collapsible icon and user count
+          const providerHeader = document.createElement('div');
+          providerHeader.classList.add('provider');
+          providerHeader.innerHTML = `${providerName} (${users.length} users)`;
+
+          const collapseIcon = document.createElement('span');
+          collapseIcon.classList.add('collapse-icon');
+          collapseIcon.innerText = '▼';
+          providerHeader.appendChild(collapseIcon);
+
+          // Append provider header to tree node
+          treeNode.appendChild(providerHeader);
+
+          // Create children container
+          const childrenContainer = document.createElement('div');
+          childrenContainer.classList.add('children');
+
+          users.forEach(user => {
+            const userNode = document.createElement('div');
+            userNode.classList.add('user-node');
+            userNode.innerHTML = `
+              <span class="user-name">${user.name}</span><br>
+              <span class="user-email">${user.email}</span>
+            `;
+            childrenContainer.appendChild(userNode);
+          });
+
+          // Initially hide children (collapse state)
+          treeNode.appendChild(childrenContainer);
+
+          // Add click event to toggle collapse/expand
+          providerHeader.addEventListener('click', () => toggleCollapse(providerName));
+
+          // Append the tree node to the family tree
+          familyTreeElement.appendChild(treeNode);
+        }
+      }
+    }
+
+    // Initialize the tree view on page load
+    renderTreeView();
+  </script>
+
+</body>
+</html>
