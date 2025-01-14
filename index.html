@@ -76,108 +76,88 @@
   <div id="family-tree" class="family-tree"></div>
 
   <script>
-    // Example data from your original file (data.json)
-    const data = {
-      "users": [
-        {
-          "user_id": 1,
-          "provider_id": "10156013132600023",
-          "name": "Musstanser Tinauli",
-          "email": "musstanser@hotmail.com",
-          "provider": "SkillBazaar"
-        },
-        {
-          "user_id": 2,
-          "provider_id": "10156013132600024",
-          "name": "John Doe",
-          "email": "johndoe@example.com",
-          "provider": "SkillBazaar"
-        },
-        {
-          "user_id": 3,
-          "provider_id": "10156013132600025",
-          "name": "Jane Smith",
-          "email": "janesmith@example.com",
-          "provider": "TechCorp"
+    // Fetch data from external data.json file
+    fetch('data.json')
+      .then(response => response.json())
+      .then(data => {
+        const providerTree = data.users.reduce((acc, user) => {
+          const { provider } = user;
+          if (!acc[provider]) {
+            acc[provider] = [];
+          }
+          acc[provider].push(user);
+          return acc;
+        }, {});
+
+        // Function to toggle collapse/expand
+        function toggleCollapse(providerName) {
+          const providerNode = document.getElementById(providerName);
+          const isCollapsed = providerNode.classList.contains('collapsed');
+          
+          if (isCollapsed) {
+            providerNode.classList.remove('collapsed');
+          } else {
+            providerNode.classList.add('collapsed');
+          }
         }
-      ]
-    };
 
-    // Group users by provider
-    const providerTree = data.users.reduce((acc, user) => {
-      const { provider } = user;
-      if (!acc[provider]) {
-        acc[provider] = [];
-      }
-      acc[provider].push(user);
-      return acc;
-    }, {});
+        // Function to render the tree view
+        function renderTreeView() {
+          const familyTreeElement = document.getElementById('family-tree');
+          for (const providerName in providerTree) {
+            if (providerTree.hasOwnProperty(providerName)) {
+              const users = providerTree[providerName];
 
-    // Function to toggle collapse/expand
-    function toggleCollapse(providerName) {
-      const providerNode = document.getElementById(providerName);
-      const isCollapsed = providerNode.classList.contains('collapsed');
-      
-      if (isCollapsed) {
-        providerNode.classList.remove('collapsed');
-      } else {
-        providerNode.classList.add('collapsed');
-      }
-    }
+              // Create tree node for the provider
+              const treeNode = document.createElement('div');
+              treeNode.classList.add('tree-node');
+              treeNode.id = providerName;
 
-    // Function to render the tree view
-    function renderTreeView() {
-      const familyTreeElement = document.getElementById('family-tree');
-      for (const providerName in providerTree) {
-        if (providerTree.hasOwnProperty(providerName)) {
-          const users = providerTree[providerName];
+              // Create provider header with collapsible icon and user count
+              const providerHeader = document.createElement('div');
+              providerHeader.classList.add('provider');
+              providerHeader.innerHTML = `${providerName} (${users.length} users)`;
 
-          // Create tree node for the provider
-          const treeNode = document.createElement('div');
-          treeNode.classList.add('tree-node');
-          treeNode.id = providerName;
+              const collapseIcon = document.createElement('span');
+              collapseIcon.classList.add('collapse-icon');
+              collapseIcon.innerText = '▼';
+              providerHeader.appendChild(collapseIcon);
 
-          // Create provider header with collapsible icon and user count
-          const providerHeader = document.createElement('div');
-          providerHeader.classList.add('provider');
-          providerHeader.innerHTML = `${providerName} (${users.length} users)`;
+              // Append provider header to tree node
+              treeNode.appendChild(providerHeader);
 
-          const collapseIcon = document.createElement('span');
-          collapseIcon.classList.add('collapse-icon');
-          collapseIcon.innerText = '▼';
-          providerHeader.appendChild(collapseIcon);
+              // Create children container
+              const childrenContainer = document.createElement('div');
+              childrenContainer.classList.add('children');
 
-          // Append provider header to tree node
-          treeNode.appendChild(providerHeader);
+              users.forEach(user => {
+                const userNode = document.createElement('div');
+                userNode.classList.add('user-node');
+                userNode.innerHTML = `
+                  <span class="user-name">${user.name}</span><br>
+                  <span class="user-email">${user.email}</span>
+                `;
+                childrenContainer.appendChild(userNode);
+              });
 
-          // Create children container
-          const childrenContainer = document.createElement('div');
-          childrenContainer.classList.add('children');
+              // Initially hide children (collapse state)
+              treeNode.appendChild(childrenContainer);
 
-          users.forEach(user => {
-            const userNode = document.createElement('div');
-            userNode.classList.add('user-node');
-            userNode.innerHTML = `
-              <span class="user-name">${user.name}</span><br>
-              <span class="user-email">${user.email}</span>
-            `;
-            childrenContainer.appendChild(userNode);
-          });
+              // Add click event to toggle collapse/expand
+              providerHeader.addEventListener('click', () => toggleCollapse(providerName));
 
-          // Initially hide children (collapse state)
-          treeNode.appendChild(childrenContainer);
-
-          // Add click event to toggle collapse/expand
-          providerHeader.addEventListener('click', () => toggleCollapse(providerName));
-
-          // Append the tree node to the family tree
-          familyTreeElement.appendChild(treeNode);
+              // Append the tree node to the family tree
+              familyTreeElement.appendChild(treeNode);
+            }
+          }
         }
-      }
-    }
 
-    // Initialize the tree view on page load
-    renderTreeView();
+        // Initialize the tree view after data is fetched
+        renderTreeView();
+      })
+      .catch(error => {
+        console.error('Error loading the data:', error);
+      });
   </script>
 
 </body>
